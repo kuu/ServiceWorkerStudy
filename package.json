@@ -1,0 +1,33 @@
+{
+  "name": "ServiceWorkerStudy",
+  "version": "0.0.0",
+  "description": "Offline YouTube demo using Service Worker.",
+  "main": "src/server.js",
+  "scripts": {
+    "build": "npm run clean && npm run lint && npm run buildScript && npm run buildStyle && cp index.html dist/ && cp vendor/* dist/",
+    "clean": "rm -fR dist ; mkdir -p dist/video",
+    "cleanDB": "rm -f offline.json",
+    "lint": "eslint src/*.js",
+    "buildScript": "browserify src/client.js --debug > dist/bundle.js",
+    "buildStyle": "stylus style/*.styl -o dist",
+    "prestart": "npm run build",
+    "start": "node src/server.js"
+  },
+  "author": "Kuu Miyazaki",
+  "license": "MIT",
+  "dependencies": {
+    "body-parser": "^1.12.1",
+    "config": "^1.12.0",
+    "express": "^4.12.2",
+    "handlebars": "^3.0.0",
+    "js-yaml": "^3.2.7",
+    "node-json-db": "^0.3.2",
+    "ytdl-core": "^0.5.0"
+  },
+  "devDependencies": {
+    "browserify": "^9.0.3",
+    "eslint": "^0.17.0",
+    "stylus": "^0.50.0"
+  },
+  "private": true
+}

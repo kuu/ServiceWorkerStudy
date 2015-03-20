@@ -1,0 +1,12 @@
+{
+  "env": {
+    "browser": true,
+    "node": true
+  },
+  "rules": {
+    "quotes": "single",
+    "no-undef": false,
+    "no-unused-vars": false,
+    "no-use-before-define": false
+  }
+}
