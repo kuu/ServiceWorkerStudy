@@ -1,28 +1,10 @@
 (function (global) {
   'use strict';
 
-  function storeCache(videoList) {
-    console.log(videoList);
-    /*
-    var urlList = Object.keys(videoList).map(function (key) {
-      return videoList[key].path;
-    });
-
-    caches.open('offline-youtube-demo-01').then(function(cache) {
-      cache.addAll(urlList);
-    });
-
-      fetch().then(function(response) {
-        return response.json();
-      }).then(function(urls) {
-    });
-    */
-  }
-
   function get(url) {
     return new Promise(function (fulfill, reject) {
       var xhr = new XMLHttpRequest();
-      xhr.open('GET', '/api/offlinify/?url=' + encodeURIComponent(url));
+      xhr.open('GET', url);
       xhr.onload = function() {
         if (xhr.status === 200) {
           fulfill(xhr.response);
@@ -38,6 +20,9 @@
   }
 
   function displayError() {
+    input.disabled = false;
+    input.addEventListener('blur', inputHandler, false);
+    input.addEventListener('keypress', inputHandler, false);
     message.innerHTML = 'Invalid URL.';
   }
 
@@ -46,6 +31,44 @@
     input.removeEventListener('blur', inputHandler, false);
     input.removeEventListener('keypress', inputHandler, false);
     message.innerHTML = 'Loading...';
+  }
+
+  function displayLoaded() {
+    input.disabled = false;
+    input.addEventListener('blur', inputHandler, false);
+    input.addEventListener('keypress', inputHandler, false);
+    message.innerHTML = 'Loaded.';
+  }
+
+  function displayList(response) {
+    var container = document.querySelector('.video-list'),
+        elementList, videoList;
+
+    try {
+      videoList = JSON.parse(response);
+    } catch (e) {
+      videoList = {};
+    }
+    elementList = Object.keys(videoList).map(function (key) {
+      var item = videoList[key];
+      return '<div><h2>' + item.title + '</h2><video src="' + item.path + '" controls muted></video></div>';
+    });
+    container.innerHTML = elementList.join('');
+
+    displayLoaded();
+  }
+
+  function request(url) {
+    displayLoading();
+    return get(url)
+    .then(
+      function (res) {
+        displayList(res);
+      },
+      function (e) {
+        displayError();
+      }
+    );
   }
 
   var message = document.querySelector('.message'),
@@ -57,23 +80,18 @@
         }
 
         if (input.value) {
-          get(input.value)
+          request('/api/offlinify/?url=' + encodeURIComponent(input.value))
           .then(
-            function (res) {
-              if (message.innerHTML === 'Loading...') {
-                message.innerHTML = 'Loaded.';
-                storeCache(res);
-              }
-            },
-            function (e) {
-              displayError();
+            function () {
+              input.value = '';
             }
           );
-          displayLoading();
         }
       };
 
   //input.addEventListener('blur', inputHandler, false);
   input.addEventListener('keypress', inputHandler, false);
+
+  request('/api/videolist');
 
 }(this));

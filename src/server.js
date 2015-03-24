@@ -8,7 +8,6 @@ var fs = require('fs'),
     bodyParser = require('body-parser'),
     config = require('config'),
     ytdl = require('ytdl-core'),
-    Handlebars = require('handlebars'),
     JsonDB = require('node-json-db');
 
 var app = express(),
@@ -16,17 +15,14 @@ var app = express(),
     BASE_DIR = path.join(__dirname, '../'),
     DOCS_DIR = path.join(BASE_DIR, 'dist/'),
     VIDEO_DIR = 'video/', filePath,
-    getHTMLText = Handlebars.compile(
-      fs.readFileSync(BASE_DIR + 'template/index.tmpl.html', {encoding: 'utf8'})
-    ),
     db = new JsonDB("db", true, false);
 
 app.use(express.static(BASE_DIR + 'dist'));
 
-app.get('/', function (req, res) {
-  var videoList, elementList;
+app.get('/api/videolist', function (req, res) {
+  var videoList;
 
-console.log('REQUEST: /');
+  console.log('REQUEST: /api/videolist');
 
   // Read DB
   try {
@@ -34,22 +30,14 @@ console.log('REQUEST: /');
   } catch (e) {
     videoList = [];
   }
-
-  // Server-side rendering
-  elementList = Object.keys(videoList).map(function (key) {
-    var item = videoList[key];
-    return '<div><h2>' + item.title + '</h2><video src="' + item.path + '" controls muted></video></div>';
-  });
-
-  res.status(200).send(getHTMLText({videoList: elementList}));
+  res.status(200).json(videoList);
 });
 
 app.get('/api/offlinify', function (req, res) {
   var videoURL = decodeURIComponent(req.query.url),
-      hostname = url.parse(videoURL, true).hostname,
-      fileName;
+      hostname = url.parse(videoURL, true).hostname;
 
-console.log('REQUEST: /api/offlinify');
+  console.log('REQUEST: /api/offlinify');
 
   if(hostname !== 'www.youtube.com' && hostname !== 'youtu.be') {
     res.sendStatus(404);

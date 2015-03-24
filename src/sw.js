@@ -41,36 +41,38 @@ self.addEventListener('fetch', function (event) {
   var url = event.request.url,
       offset = url.indexOf(location.host) + location.host.length;
 
-  caches.match(event.request)
-  .then(function (response) {
-    if (response) {
-      console.log('ServiceWorker.onfetch: Loading static contents from cache.', url);
-      return response;
-    }
+  event.respondWith(
+    caches.match(event.request)
+    .then(function (response) {
+      if (response) {
+        console.log('ServiceWorker.onfetch: Loading static contents from cache.', url);
+        return response;
+      }
 
-    console.log('ServiceWorker.onfetch: Loading static contents from network.', url);
+      console.log('ServiceWorker.onfetch: Loading static contents from network.', url);
 
-    var fetchRequest = event.request.clone();
+      var fetchRequest = event.request.clone();
 
-    return fetch(fetchRequest).then(function(res) {
-      var responseToCache;
+      return fetch(fetchRequest).then(function(res) {
+        var responseToCache;
 
-      if (offset === -1 || !res || res.status >= 300 || res.type !== 'basic') {
-        console.log('do not cache: ', res);
+        if (offset === -1 || !res || (res.status !== 200 && res.status !== 206) || res.type !== 'basic') {
+          console.log('do not cache: ', res);
+          return res;
+        }
+
+        if (url.slice(offset).indexOf('/video/') === 0 ||
+            url.slice(offset).indexOf('/api/videolist') === 0) {
+          responseToCache = res.clone();
+
+          console.log('\tOpen cache ...');
+          caches.open(CACHE_NAME).then(function(cache) {
+            console.log('\tAnd cache it!');
+            cache.put(fetchRequest, responseToCache);
+          });
+        }
         return res;
-      }
-
-      if (url.slice(offset).indexOf('/video/') === 0) {
-        responseToCache = res.clone();
-
-        console.log('\tOpen cache ...');
-        caches.open(CACHE_NAME).then(function(cache) {
-          console.log('\tAnd cache it!');
-          cache.put(fetchRequest, responseToCache);
-        });
-      }
-
-      return res;
-    });
-  });
+      });
+    })
+  );
 });
