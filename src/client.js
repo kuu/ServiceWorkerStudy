@@ -1,6 +1,24 @@
 (function (global) {
   'use strict';
 
+  function storeCache(videoList) {
+    console.log(videoList);
+    /*
+    var urlList = Object.keys(videoList).map(function (key) {
+      return videoList[key].path;
+    });
+
+    caches.open('offline-youtube-demo-01').then(function(cache) {
+      cache.addAll(urlList);
+    });
+
+      fetch().then(function(response) {
+        return response.json();
+      }).then(function(urls) {
+    });
+    */
+  }
+
   function get(url) {
     return new Promise(function (fulfill, reject) {
       var xhr = new XMLHttpRequest();
@@ -20,19 +38,20 @@
   }
 
   function displayError() {
-    container.innerHTML = 'Invalid URL.';
+    message.innerHTML = 'Invalid URL.';
   }
 
   function displayLoading() {
     input.disabled = true;
     input.removeEventListener('blur', inputHandler, false);
     input.removeEventListener('keypress', inputHandler, false);
-    container.innerHTML = 'Loading...';
+    message.innerHTML = 'Loading...';
   }
 
-  var container = document.querySelector('.player'),
+  var message = document.querySelector('.message'),
       input = document.querySelector('input'),
       inputHandler = function (ev) {
+        ev.preventDefault();
         if (ev.type === 'keypress' && ev.keyCode !== 13) {
           return;
         }
@@ -40,12 +59,10 @@
         if (input.value) {
           get(input.value)
           .then(
-            function () {
-              if (container.innerHTML === 'Loading...') {
-                container.innerHTML = 'Loaded.';
-                console.log('window.open :' + '/offline');
-                //window.open('//' + location.host + '/offline');
-                location.pathname = 'offline';
+            function (res) {
+              if (message.innerHTML === 'Loading...') {
+                message.innerHTML = 'Loaded.';
+                storeCache(res);
               }
             },
             function (e) {
@@ -56,7 +73,7 @@
         }
       };
 
-  input.addEventListener('blur', inputHandler, false);
+  //input.addEventListener('blur', inputHandler, false);
   input.addEventListener('keypress', inputHandler, false);
 
 }(this));

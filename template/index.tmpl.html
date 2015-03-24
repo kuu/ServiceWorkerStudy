@@ -5,6 +5,25 @@
   <meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,minimum-scale=1.0,user-scalable=yes" />
   <title>Offline YouTube video demo</title>
   <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <h1>Offline YouTube video demo</h1>
+  <div class="main">
+    <div class="add">
+      <h2>Input video URL (ex. https://youtu.be/Av1UW0myxiA )</h2>
+      <div>
+        <input type="text" />
+      </div>
+      <div class="message">Loaded.</div>
+    </div>
+    <div class="list">
+      <h2>These videos are available offline too:</h2>
+      <div class="video-list">
+        {{{videoList}}}
+      </div>
+    </div>
+  </div>
+  <script src="bundle.js"></script>
   <script>
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('sw.js')
@@ -16,10 +35,5 @@
     });
   }
   </script>
-</head>
-<body>
-  <h1>These videos are available offline too:</h1>
-  <div class="main">
-    {{{videoList}}}
-  </div>
 </body>
+</html>

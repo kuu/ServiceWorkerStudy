@@ -4,12 +4,13 @@
   "description": "Offline YouTube demo using Service Worker.",
   "main": "src/server.js",
   "scripts": {
-    "build": "npm run clean && npm run lint && npm run buildScript && npm run buildStyle && cp index.html dist/ && cp vendor/* dist/",
-    "clean": "rm -fR dist ; mkdir -p dist/video",
-    "cleanDB": "rm -f offline.json",
+    "build": "npm run lint && npm run buildScript && npm run buildStyle && npm run copyStaticFiles",
+    "clean": "npm run cleanDB ; rm -fR dist ; mkdir -p dist/video",
+    "cleanDB": "rm -f db.json",
     "lint": "eslint src/*.js",
     "buildScript": "browserify src/client.js --debug > dist/bundle.js",
     "buildStyle": "stylus style/*.styl -o dist",
+    "copyStaticFiles": "cp index.html dist/ & cp src/sw.js dist/ & cp vendor/* dist/",
     "prestart": "npm run build",
     "start": "node src/server.js"
   },

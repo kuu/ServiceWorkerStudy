@@ -42,7 +42,7 @@ if (!Cache.prototype.addAll) {
           if (scheme !== 'http:' && scheme !== 'https:') {
             throw new NetworkError("Invalid scheme");
           }
-
+console.log('from cache polyfill: fetch(' + request.url + ')');
           return fetch(request.clone());
         })
       );

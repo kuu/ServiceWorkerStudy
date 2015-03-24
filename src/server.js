@@ -17,19 +17,39 @@ var app = express(),
     DOCS_DIR = path.join(BASE_DIR, 'dist/'),
     VIDEO_DIR = 'video/', filePath,
     getHTMLText = Handlebars.compile(
-      fs.readFileSync(BASE_DIR + 'offline.html', {encoding: 'utf8'})
+      fs.readFileSync(BASE_DIR + 'template/index.tmpl.html', {encoding: 'utf8'})
     ),
-    getJSText = Handlebars.compile(
-      fs.readFileSync(BASE_DIR + 'sw.js', {encoding: 'utf8'})
-    ),
-    db = new JsonDB("offline", true, false);
+    db = new JsonDB("db", true, false);
 
 app.use(express.static(BASE_DIR + 'dist'));
+
+app.get('/', function (req, res) {
+  var videoList, elementList;
+
+console.log('REQUEST: /');
+
+  // Read DB
+  try {
+    videoList = db.getData("/video") || [];
+  } catch (e) {
+    videoList = [];
+  }
+
+  // Server-side rendering
+  elementList = Object.keys(videoList).map(function (key) {
+    var item = videoList[key];
+    return '<div><h2>' + item.title + '</h2><video src="' + item.path + '" controls muted></video></div>';
+  });
+
+  res.status(200).send(getHTMLText({videoList: elementList}));
+});
 
 app.get('/api/offlinify', function (req, res) {
   var videoURL = decodeURIComponent(req.query.url),
       hostname = url.parse(videoURL, true).hostname,
       fileName;
+
+console.log('REQUEST: /api/offlinify');
 
   if(hostname !== 'www.youtube.com' && hostname !== 'youtu.be') {
     res.sendStatus(404);
@@ -49,57 +69,21 @@ app.get('/api/offlinify', function (req, res) {
     ytdl(videoURL, { filter: function(format) { return format.quality === 'medium' && format.container === 'mp4'; } })
     .pipe(fs.createWriteStream(DOCS_DIR + filePath))
     .on('finish', function() {
-      var version;
-      try {
-        version = parseInt(db.getData("/version"));
-      } catch (e) {
-        // DB is empty. (first access)
-        version = 0;
-      }
-
-      // Write DB.
-      db.push('/' + filePath, {
+      var obj = {
         title: info.title,
         path: filePath
-      });
-      db.push('/version', ++version);
+      };
+
+      // Write DB.
+      db.push('/' + filePath, obj);
+
+      // Read DB
+      obj = db.getData("/video") || [];
 
       // Send response.
-      res.status(200).send(filePath);
+      res.status(200).json(obj);
     });
   });
-});
-
-app.get('/offline', function (req, res) {
-  // Read DB
-  var videoList = db.getData("/video"),
-      version = parseInt(db.getData("/version")),
-      urlList, elementList;
-
-  if (!videoList) {
-    res.sendStatus(404);
-    return;
-  }
-
-  // Update Service Worker.
-  urlList = Object.keys(videoList).map(function (key) {
-    return videoList[key].path;
-  });
-
-  fs.writeFileSync(DOCS_DIR + 'sw.js', getJSText({
-    cacheName: 'offline-youtube-demo-' + (version),
-    cacheURLs: JSON.stringify(urlList)
-  }));
-
-  console.log('Generated SW: version=' + version);
-
-  // Send response
-  elementList = Object.keys(videoList).map(function (key) {
-    var item = videoList[key];
-    return '<div><h2>' + item.title + '</h2><video src="' + item.path + '" controls muted></video></div>';
-  });
-
-  res.status(200).send(getHTMLText({videoList: elementList}));
 });
 
 // Start server
