@@ -6,9 +6,9 @@ Offline YouTube demo using Service Worker.
 ##Install
 
 ```
-$ git@git.gree-dev.net:kuu-miyazaki/OfflineYouTube.git
-$ cd OfflineYouTube
-$ npm init
+$ git clone git@github.com:kuu/ServiceWorkerStudy.git
+$ cd ServiceWorkerStudy
+$ npm install
 ```
 
 ##Build & Run
