@@ -17,4 +17,4 @@ $ npm install
 $ npm start
 ```
 
-(Open http:localhost:3030 in Chrome<40.)
+(Open http:localhost:3030 in Chrome 40+)
