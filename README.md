@@ -14,6 +14,7 @@ $ npm install
 ##Build & Run
 
 ```
+$ npm clean
 $ npm start
 ```
 
